@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#17191C" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<title>Training Log</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Expanded:wght@800;900&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet" />
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+:root {
+  --ink: #17191C;
+  --paper: #F1F2EE;
+  --line: #D6D8D2;
+  --signal: #FF4D00;
+  --steel: #6B7178;
+  --card: #FFFFFF;
+}
+
+body {
+  min-height: 100vh;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Archivo', system-ui, sans-serif;
+  font-size: 16px;
+}
+body.dark { background: var(--ink); color: var(--paper); }
+
+.screen { max-width: 480px; margin: 0 auto; padding: 20px 16px 40px; }
+
+/* --- Masthead --- */
+.masthead { padding: 8px 4px 20px; border-bottom: 3px solid var(--ink); position: relative; }
+.eyebrow { font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--steel); margin-bottom: 6px; }
+.masthead h1 { font-family: 'Archivo Expanded', 'Archivo', sans-serif; font-weight: 900; font-size: 44px; line-height: 0.95; text-transform: uppercase; letter-spacing: -0.01em; }
+.week-count { position: absolute; right: 4px; bottom: 20px; display: flex; align-items: center; gap: 8px; }
+.week-num { font-family: 'Archivo Expanded', sans-serif; font-weight: 900; font-size: 40px; color: var(--signal); line-height: 1; }
+.week-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--steel); line-height: 1.3; }
+
+/* --- Week selector --- */
+.week-select { margin-top: 16px; }
+.week-select h2 { font-family: 'IBM Plex Mono', monospace; font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--steel); margin-bottom: 8px; }
+.week-chips { display: flex; gap: 6px; }
+.week-chip {
+  flex: 1; height: 44px; border-radius: 4px; border: 1.5px solid var(--ink);
+  background: var(--card); font-family: 'IBM Plex Mono', monospace; font-weight: 600;
+  font-size: 15px; cursor: pointer; color: var(--ink); transition: all 0.1s ease;
+}
+.week-chip-on { background: var(--signal); border-color: var(--signal); color: #fff; }
+.week-chip:focus-visible { outline: 3px solid var(--signal); outline-offset: 2px; }
+.week-note { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--steel); margin-top: 6px; }
+
+/* --- Day cards --- */
+.cards { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
+.day-card {
+  display: flex; align-items: center; gap: 14px; width: 100%; text-align: left;
+  background: var(--card); border: 1.5px solid var(--ink); border-radius: 4px;
+  padding: 14px; cursor: pointer; transition: transform 0.08s ease;
+  font-family: inherit; color: inherit; font-size: inherit;
+}
+.day-card:active { transform: scale(0.985); }
+.day-card:focus-visible { outline: 3px solid var(--signal); outline-offset: 2px; }
+.plate {
+  flex: none; width: 52px; height: 52px; border-radius: 50%;
+  background: var(--ink); color: var(--paper);
+  font-family: 'Archivo Expanded', sans-serif; font-weight: 900; font-size: 18px;
+  display: flex; align-items: center; justify-content: center;
+  border: 3px solid var(--ink); box-shadow: inset 0 0 0 3px var(--paper);
+}
+.day-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.day-name { font-weight: 700; font-size: 18px; text-transform: uppercase; letter-spacing: 0.02em; }
+.day-sub { font-size: 13px; color: var(--steel); }
+.day-variant { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--signal); margin-top: 2px; }
+.day-last { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--steel); }
+.go { font-size: 20px; }
+
+/* --- History --- */
+.history { margin-top: 28px; }
+.history h2 { font-family: 'IBM Plex Mono', monospace; font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--steel); margin-bottom: 8px; }
+.history ul { list-style: none; }
+.history li { display: flex; gap: 12px; padding: 8px 4px; border-bottom: 1px solid var(--line); font-size: 14px; align-items: baseline; }
+.h-date { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--steel); flex: none; width: 105px; }
+.h-name { font-weight: 600; }
+.h-var { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--steel); }
+.h-abs { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--signal); margin-left: auto; }
+
+.footnote { margin-top: 28px; font-size: 12px; color: var(--steel); line-height: 1.5; text-align: center; }
+
+/* --- Topbar --- */
+.topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.topbar-title { font-family: 'Archivo Expanded', sans-serif; font-weight: 900; text-transform: uppercase; font-size: 16px; }
+.topbar-pct { font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 600; color: var(--signal); }
+.link-btn { background: none; border: none; font-family: inherit; font-size: 14px; font-weight: 600; color: inherit; cursor: pointer; padding: 6px; }
+.link-btn.subtle { color: var(--steel); font-weight: 500; }
+.link-btn:focus-visible { outline: 3px solid var(--signal); outline-offset: 2px; }
+
+.progress-rail { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; margin-bottom: 10px; }
+.progress-fill { height: 100%; background: var(--signal); transition: width 0.25s ease; }
+
+.variant-banner {
+  font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--steel);
+  text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px;
+}
+.variant-banner strong { color: var(--signal); }
+
+/* --- Blocks --- */
+.block { background: var(--card); border: 1.5px solid var(--ink); border-radius: 4px; padding: 14px; margin-bottom: 12px; }
+.block-done { border-color: var(--line); opacity: 0.65; }
+.block-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; gap: 8px; }
+.block-head h2 { font-size: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+.block-meta { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--steel); text-align: right; }
+.ex-list { list-style: none; margin-bottom: 12px; }
+.ex-item { border-bottom: 1px dashed var(--line); }
+.ex-item:last-child { border-bottom: none; }
+.ex-row {
+  display: flex; justify-content: space-between; gap: 10px; padding: 7px 0;
+  font-size: 14px; width: 100%; text-align: left; background: none; border: none;
+  font-family: inherit; color: inherit; cursor: pointer;
+}
+.ex-row:focus-visible { outline: 3px solid var(--signal); outline-offset: 2px; }
+.ex-q {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid var(--steel);
+  color: var(--steel); font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+  vertical-align: 1px;
+}
+.ex-desc {
+  font-size: 13px; color: var(--steel); line-height: 1.5;
+  padding: 0 4px 10px; border-left: 3px solid var(--signal); padding-left: 10px;
+  margin: 0 0 8px;
+}
+.ex-name { font-weight: 500; }
+.ex-detail { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--steel); text-align: right; flex: none; }
+.rounds { display: flex; gap: 8px; flex-wrap: wrap; }
+.round {
+  width: 46px; height: 46px; border-radius: 4px; border: 1.5px solid var(--ink);
+  background: var(--paper); font-family: 'IBM Plex Mono', monospace; font-weight: 600;
+  font-size: 16px; cursor: pointer; color: var(--ink); transition: all 0.1s ease;
+}
+.round-on { background: var(--ink); color: var(--paper); }
+.round:focus-visible { outline: 3px solid var(--signal); outline-offset: 2px; }
+
+/* --- Finish zone / rest dock --- */
+.finish-zone { display: flex; flex-direction: column; gap: 8px; align-items: stretch; margin-top: 6px; }
+.primary {
+  background: var(--signal); color: #fff; border: none; border-radius: 4px;
+  font-family: 'Archivo', sans-serif; font-weight: 700; font-size: 16px;
+  padding: 15px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.03em;
+  text-align: center; text-decoration: none; display: block;
+}
+.primary:active { filter: brightness(0.92); }
+.primary:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+.primary-soft { background: var(--ink); }
+.finish-zone .link-btn { align-self: center; }
+
+.rest-dock {
+  position: fixed; bottom: 14px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 8px; z-index: 10;
+}
+.rest-btn {
+  background: var(--ink); color: var(--paper); border: none; border-radius: 999px;
+  font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 14px;
+  padding: 12px 20px; cursor: pointer; box-shadow: 0 4px 14px rgba(23,25,28,0.3);
+}
+.rest-live { background: var(--signal); font-size: 13px; }
+.rest-count { font-size: 20px; font-weight: 700; margin-right: 8px; }
+.dock-spacer { height: 70px; }
+
+/* --- Abs screens --- */
+.light { color: var(--paper) !important; }
+
+.video-link {
+  display: flex; align-items: center; gap: 14px; width: 100%;
+  background: var(--ink); color: var(--paper); border-radius: 4px;
+  padding: 14px; text-decoration: none; margin-bottom: 12px;
+  transition: transform 0.08s ease;
+}
+.video-link:active { transform: scale(0.985); }
+.video-link:focus-visible { outline: 3px solid var(--signal); outline-offset: 2px; }
+.video-play {
+  flex: none; width: 44px; height: 44px; border-radius: 50%;
+  background: var(--signal); color: #fff; font-size: 17px;
+  display: flex; align-items: center; justify-content: center;
+}
+.video-link-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.video-link-name { font-weight: 700; font-size: 16px; text-transform: uppercase; letter-spacing: 0.02em; }
+.video-link-sub { font-size: 12px; color: rgba(241,242,238,0.65); }
+.video-link .go { color: var(--paper); }
+
+.abs-block .ex-row { padding: 10px 0; }
+.abs-block .ex-name { font-size: 15px; }
+.abs-block .ex-detail { font-size: 13px; }
+.abs-num-label {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--paper); border: 1.5px solid var(--ink);
+  font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 600;
+  margin-right: 4px; vertical-align: -4px;
+}
+
+.abs-stage { max-width: 480px; margin: 0 auto; text-align: center; padding: 14px 0 8px; }
+.abs-kind { font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.2em; color: var(--signal); }
+.abs-name { font-family: 'Archivo Expanded', sans-serif; font-weight: 900; font-size: 26px; text-transform: uppercase; margin: 8px 0 18px; min-height: 32px; }
+.abs-clock {
+  width: 180px; height: 180px; margin: 0 auto; border-radius: 50%;
+  background: conic-gradient(var(--signal) var(--ring), rgba(255,255,255,0.12) 0);
+  display: flex; align-items: center; justify-content: center;
+}
+.abs-clock span {
+  width: 150px; height: 150px; border-radius: 50%; background: var(--ink);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Archivo Expanded', sans-serif; font-weight: 900; font-size: 56px;
+}
+.abs-next { margin-top: 16px; font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: rgba(241,242,238,0.6); }
+.abs-list { max-width: 480px; margin: 20px auto 0; list-style: none; columns: 2; gap: 12px; padding: 0 8px; }
+.abs-list li { font-size: 13px; padding: 5px 0; color: rgba(241,242,238,0.75); break-inside: avoid; }
+.abs-list.abs-list-expand { columns: 1; }
+.abs-list.abs-list-expand li { padding: 0; }
+.abs-row {
+  width: 100%; text-align: left; background: none; border: none;
+  font-family: inherit; font-size: 13px; color: rgba(241,242,238,0.85);
+  padding: 7px 0; cursor: pointer; border-bottom: 1px dashed rgba(241,242,238,0.15);
+}
+.abs-row:focus-visible { outline: 3px solid var(--signal); outline-offset: 2px; }
+.abs-row .ex-q { border-color: rgba(241,242,238,0.4); color: rgba(241,242,238,0.6); }
+.abs-desc { color: rgba(241,242,238,0.6); margin-top: 6px; }
+.abs-cue {
+  max-width: 340px; margin: -8px auto 16px; font-size: 13px;
+  color: rgba(241,242,238,0.65); line-height: 1.5; min-height: 20px;
+}
+.abs-list .abs-past { text-decoration: line-through; color: rgba(241,242,238,0.35); }
+.abs-list .abs-now { color: var(--signal); font-weight: 700; }
+
+.video-launch { max-width: 480px; margin: 20px auto 0; display: flex; flex-direction: column; gap: 10px; align-items: stretch; text-align: center; }
+.video-hint { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: rgba(241,242,238,0.6); line-height: 1.6; }
+.abs-controls { max-width: 480px; margin: 20px auto 0; display: flex; flex-direction: column; gap: 6px; align-items: center; }
+.abs-controls .primary { width: 100%; max-width: 300px; }
+
+/* --- Done --- */
+.done-screen { text-align: center; padding-top: 80px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+.done-stamp {
+  width: 90px; height: 90px; border-radius: 50%; border: 4px solid var(--signal);
+  color: var(--signal); font-size: 44px; font-weight: 900;
+  display: flex; align-items: center; justify-content: center;
+}
+.done-title { font-family: 'Archivo Expanded', sans-serif; font-weight: 900; font-size: 30px; text-transform: uppercase; }
+.done-sub { color: var(--steel); font-size: 15px; max-width: 300px; }
+.done-screen .primary { margin-top: 10px; min-width: 260px; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}
+</style>
+</head>
+<body>
+<div id="app" class="screen"></div>
+
+<script>
+/* ================= 6-week program data =================
+   Each day type has 3 variants (A, B, C) that rotate weekly:
+   Week 1→A, 2→B, 3→C, 4→A+, 5→B+, 6→C+
+   Weeks 4–6 repeat the variant with +1 round on Superset A. */
+
+const DAYS = [
+  { id: "push",  name: "Push",       tag: "P1", subtitle: "Chest · Shoulders · Triceps" },
+  { id: "pull",  name: "Pull",       tag: "P2", subtitle: "Back · Biceps" },
+  { id: "lower", name: "Lower",      tag: "L",  subtitle: "Legs · Glutes" },
+  { id: "upper", name: "Full Upper", tag: "U",  subtitle: "Push + Pull Combined" },
+];
+
+const VARIANTS = {
+  push: [
+    { label: "A", blocks: [
+      { name: "Superset A", rounds: 4, rest: "30–45 sec", exercises: [
+        { name: "Push-ups", detail: "15 reps" },
+        { name: "DB Flat Floor Press", detail: "12 reps · 25–30 lbs" } ] },
+      { name: "Superset B", rounds: 3, rest: "30–45 sec", exercises: [
+        { name: "DB Flyes (floor)", detail: "12 reps · 15–20 lbs" },
+        { name: "DB Close-Grip Floor Press", detail: "12 reps · 20–25 lbs" } ] },
+      { name: "Superset C", rounds: 3, rest: "30–45 sec", exercises: [
+        { name: "Seated DB Shoulder Press", detail: "12 reps · 20–25 lbs" },
+        { name: "DB Lateral Raise", detail: "15 reps · 10–15 lbs" } ] },
+      { name: "Finisher", rounds: 3, rest: "30 sec", exercises: [
+        { name: "Tricep Dips (bench/chair)", detail: "15 reps" },
+        { name: "Overhead Tricep Ext. (seated)", detail: "12 reps · 15–20 lbs" } ] },
+    ]},
+    { label: "B", blocks: [
+      { name: "Superset A", rounds: 4, rest: "30–45 sec", exercises: [
+        { name: "DB Bench Press", detail: "12 reps · 25–30 lbs" },
+        { name: "Decline Push-ups (feet on bench)", detail: "10 reps" } ] },
+      { name: "Superset B", rounds: 3, rest: "30–45 sec", exercises: [
+        { name: "DB Squeeze Press", detail: "12 reps · 20–25 lbs" },
+        { name: "DB Pullover (on bench)", detail: "12 reps · one 25–30 lb DB" } ] },
+      { name: "Superset C", rounds: 3, rest: "30–45 sec", exercises: [
+        { name: "Seated Arnold Press", detail: "10 reps · 15–20 lbs" },
+        { name: "DB Front Raise", detail: "12 reps · 10–15 lbs" } ] },
+      { name: "Finisher", rounds: 3, rest: "30 sec", exercises: [
+        { name: "Skull Crushers (lying on bench)", detail: "12 reps · 15–20 lbs" },
+        { name: "Diamond Push-ups", detail: "10 reps" } ] },
+    ]},
+    { label: "C", blocks: [
+      { name: "Superset A", rounds: 4, rest: "30–45 sec", exercises: [
+        { name: "DB Floor Press (neutral grip)", detail: "12 reps · 25–30 lbs" },
+        { name: "Incline Push-ups (hands on bench)", detail: "15 reps" } ] },
+      { name: "Superset B", rounds: 3, rest: "30–45 sec", exercises: [
+        { name: "DB Flyes (on bench)", detail: "12 reps · 15–20 lbs" },
+        { name: "Single-Arm Floor Press", detail: "10 reps each · 25–30 lbs" } ] },
+      { name: "Superset C", rounds: 3, rest: "30–45 sec", exercises: [
+        { name: "Seated DB Shoulder Press (slow)", detail: "10 reps · 20–25 lbs" },
+        { name: "DB Upright Row", detail: "12 reps · 20–25 lbs" } ] },
+      { name: "Finisher", rounds: 3, rest: "30 sec", exercises: [
+        { name: "Tricep Kickbacks", detail: "12 reps · 10–15 lbs" },
+        { name: "Bench Dips (feet out)", detail: "12 reps" } ] },
+    ]},
+  ],
+
+  pull: [
+    { label: "A", blocks: [
+      { name: "Superset A", rounds: 4, rest: "30–45 sec", exercises: [
+        { name: "DB Bent-Over Row", detail: "12 reps · 25–30 lbs" },
+        { name: "DB Bicep Curl", detail: "12 reps · 20–25 lbs" } ] },
+      { name: "Superset B", rounds: 3, rest: "30–45 sec", exercises: [
+        { name: "DB Single-Arm Row", detail: "12 reps each · 25–30 lbs" },
+        { name: "Hammer Curl", detail: "12 reps · 20–25 lbs" } ] },
+      { name: "Superset C", rounds: 3, rest: "30–45 sec", exercises: [
+        { name: "DB Renegade Row", detail: "10 reps · 20–25 lbs" },
+        { name: "DB Shrugs", detail: "15 reps · 30 lbs each" } ] },
+      { name: "Finisher", rounds: 2, rest: "30 sec", exercises: [
+        { name: "DB Rear Delt Flye (bent over)", detail: "12 reps · 10–15 lbs" },
+        { name: "DB Reverse Curl", detail: "12 reps · 15–20 lbs" } ] },
+    ]},
+    { label: "B", blocks: [
+      { name: "Superset A", rounds: 4, rest: "30–45 sec", exercises: [
+        { name: "Prone DB Row (chest on bench)", detail: "12 reps · 20–25 lbs" },
+        { name: "Concentration Curl", detail: "10 reps each · 20–25 lbs" } ] },
+      { name: "Superset B", rounds: 3, rest: "30–45 sec", exercises: [
+        { name: "DB Pullover (lat focus)", detail: "12 reps · one 25–30 lb DB" },
+        { name: "Zottman Curl", detail: "10 reps · 15–20 lbs" } ] },
+      { name: "Superset C", rounds: 3, rest: "30–45 sec", exercises: [
+        { name: "Gorilla Row", detail: "12 reps each · 25–30 lbs" },
+        { name: "Cross-Body Hammer Curl", detail: "10 reps each · 20–25 lbs" } ] },
+      { name: "Finisher", rounds: 2, rest: "30 sec", exercises: [
+        { name: "DB Rear Delt Flye", detail: "12 reps · 10–15 lbs" },
+        { name: "DB Shrugs (3 sec hold at top)", detail: "12 reps · 30 lbs each" } ] },
+    ]},
+    { label: "C", blocks: [
+      { name: "Superset A", rounds: 4, rest: "30–45 sec", exercises: [
+        { name: "Underhand Bent-Over Row", detail: "12 reps · 25–30 lbs" },
+        { name: "DB Drag Curl", detail: "12 reps · 15–20 lbs" } ] },
+      { name: "Superset B", rounds: 3, rest: "30–45 sec", exercises: [
+        { name: "Single-Arm Row (elbow out)", detail: "10 reps each · 20–25 lbs" },
+        { name: "Wide-Grip DB Curl", detail: "12 reps · 15–20 lbs" } ] },
+      { name: "Superset C", rounds: 3, rest: "30–45 sec", exercises: [
+        { name: "DB Renegade Row", detail: "10 reps · 20–25 lbs" },
+        { name: "DB Reverse Curl", detail: "12 reps · 15–20 lbs" } ] },
+      { name: "Finisher", rounds: 2, rest: "30 sec", exercises: [
+        { name: "Superman Hold", detail: "30 sec" },
+        { name: "Farmer Hold", detail: "40 sec · 30 lbs each" } ] },
+    ]},
+  ],
+
+  lower: [
+    { label: "A", blocks: [
+      { name: "Superset A", rounds: 4, rest: "30–45 sec", exercises: [
+        { name: "DB Goblet Squat", detail: "12 reps · 30 lbs" },
+        { name: "Glute Bridge", detail: "20 reps · BW or 30 lbs on hips" } ] },
+      { name: "Superset B", rounds: 3, rest: "30–45 sec", exercises: [
+        { name: "DB Reverse Lunge", detail: "12 reps each · 20–25 lbs" },
+        { name: "DB Sumo Squat", detail: "15 reps · 30 lbs" } ] },
+      { name: "Superset C", rounds: 3, rest: "30–45 sec", exercises: [
+        { name: "Bodyweight Squat", detail: "20 reps" },
+        { name: "Calf Raises", detail: "20 reps · 30 lb DBs" } ] },
+      { name: "Finisher", rounds: 3, rest: "30 sec", exercises: [
+        { name: "Bulgarian Split Squat (rear foot on bench)", detail: "10 reps each · 15–20 lbs or BW" } ] },
+    ]},
+    { label: "B", blocks: [
+      { name: "Superset A", rounds: 4, rest: "30–45 sec", exercises: [
+        { name: "DB Romanian Deadlift", detail: "12 reps · 30 lbs each" },
+        { name: "Step-ups (onto bench)", detail: "10 reps each · 15–20 lbs" } ] },
+      { name: "Superset B", rounds: 3, rest: "30–45 sec", exercises: [
+        { name: "DB Forward Lunge", detail: "10 reps each · 20–25 lbs" },
+        { name: "Goblet Pause Squat (2 sec hold)", detail: "10 reps · 30 lbs" } ] },
+      { name: "Superset C", rounds: 3, rest: "30–45 sec", exercises: [
+        { name: "Single-Leg Glute Bridge", detail: "12 reps each" },
+        { name: "Seated Calf Raise (DBs on knees)", detail: "20 reps · 30 lbs" } ] },
+      { name: "Finisher", rounds: 3, rest: "30 sec", exercises: [
+        { name: "Wall Sit", detail: "45 sec" } ] },
+    ]},
+    { label: "C", blocks: [
+      { name: "Superset A", rounds: 4, rest: "30–45 sec", exercises: [
+        { name: "DB Sumo Deadlift", detail: "12 reps · 30 lbs each" },
+        { name: "Lateral Lunge", detail: "8 reps each · 15–20 lbs" } ] },
+      { name: "Superset B", rounds: 3, rest: "30–45 sec", exercises: [
+        { name: "Hip Thrust (shoulders on bench)", detail: "15 reps · 30 lbs" },
+        { name: "DB Split Squat", detail: "10 reps each · 20–25 lbs" } ] },
+      { name: "Superset C", rounds: 3, rest: "30–45 sec", exercises: [
+        { name: "Curtsy Lunge", detail: "10 reps each · BW or 15 lbs" },
+        { name: "Single-Leg Calf Raise", detail: "15 reps each" } ] },
+      { name: "Finisher", rounds: 3, rest: "30 sec", exercises: [
+        { name: "Goblet Squat Drop Set", detail: "12 reps · 30 lbs → 10 reps · 20 lbs" } ] },
+    ]},
+  ],
+
+  upper: [
+    { label: "A", blocks: [
+      { name: "Superset A", rounds: 4, rest: "30–45 sec", exercises: [
+        { name: "DB Flat Floor Press", detail: "12 reps · 25–30 lbs" },
+        { name: "DB Bent-Over Row", detail: "12 reps · 25–30 lbs" } ] },
+      { name: "Superset B", rounds: 3, rest: "30–45 sec", exercises: [
+        { name: "Seated DB Arnold Press", detail: "10 reps · 15–20 lbs" },
+        { name: "DB Single-Arm Row", detail: "10 reps each · 25–30 lbs" } ] },
+      { name: "Superset C", rounds: 3, rest: "30–45 sec", exercises: [
+        { name: "Push-ups", detail: "15 reps" },
+        { name: "DB Bicep Curl", detail: "12 reps · 20–25 lbs" } ] },
+      { name: "Finisher", rounds: 2, rest: "30 sec", exercises: [
+        { name: "DB Lateral Raise", detail: "12 reps · 10–15 lbs" },
+        { name: "Overhead Tricep Ext. (seated)", detail: "12 reps · 15–20 lbs" } ] },
+    ]},
+    { label: "B", blocks: [
+      { name: "Superset A", rounds: 4, rest: "30–45 sec", exercises: [
+        { name: "DB Bench Press", detail: "12 reps · 25–30 lbs" },
+        { name: "Prone DB Row (chest on bench)", detail: "12 reps · 20–25 lbs" } ] },
+      { name: "Superset B", rounds: 3, rest: "30–45 sec", exercises: [
+        { name: "Seated DB Shoulder Press", detail: "10 reps · 20–25 lbs" },
+        { name: "DB Pullover (on bench)", detail: "12 reps · one 25–30 lb DB" } ] },
+      { name: "Superset C", rounds: 3, rest: "30–45 sec", exercises: [
+        { name: "Decline Push-ups (feet on bench)", detail: "10 reps" },
+        { name: "Zottman Curl", detail: "10 reps · 15–20 lbs" } ] },
+      { name: "Finisher", rounds: 2, rest: "30 sec", exercises: [
+        { name: "DB Rear Delt Flye", detail: "12 reps · 10–15 lbs" },
+        { name: "Skull Crushers (on bench)", detail: "12 reps · 15–20 lbs" } ] },
+    ]},
+    { label: "C", blocks: [
+      { name: "Superset A", rounds: 4, rest: "30–45 sec", exercises: [
+        { name: "DB Floor Press", detail: "12 reps · 25–30 lbs" },
+        { name: "Gorilla Row", detail: "12 reps each · 25–30 lbs" } ] },
+      { name: "Superset B", rounds: 3, rest: "30–45 sec", exercises: [
+        { name: "Seated Arnold Press", detail: "10 reps · 15–20 lbs" },
+        { name: "Underhand Bent-Over Row", detail: "12 reps · 25–30 lbs" } ] },
+      { name: "Superset C", rounds: 3, rest: "30–45 sec", exercises: [
+        { name: "Push-ups", detail: "15 reps" },
+        { name: "Concentration Curl", detail: "10 reps each · 20–25 lbs" } ] },
+      { name: "Finisher", rounds: 2, rest: "30 sec", exercises: [
+        { name: "DB Front Raise", detail: "12 reps · 10–15 lbs" },
+        { name: "Tricep Kickbacks", detail: "12 reps · 10–15 lbs" } ] },
+    ]},
+  ],
+};
+
+const ABS = [
+  "Plank", "Bicycle Crunches", "Leg Raises", "Russian Twist (15–20 lbs)",
+  "Mountain Climbers", "Hollow Body Hold", "Reverse Crunches", "Dead Bug",
+];
+
+const ABS_VIDEO_URL = "https://www.youtube.com/watch?v=sWjTnBmCHTY";
+const WORK_SECS = 45;
+const REST_SECS = 10;
+const ABS_SEQ = ABS.flatMap((name, i) =>
+  i < ABS.length - 1
+    ? [{ kind: "work", name: name }, { kind: "rest", name: "Transition" }]
+    : [{ kind: "work", name: name }]
+);
+
+/* ---------- Exercise how-to descriptions ---------- */
+const DESC = {
+  /* Push */
+  "Push-ups": "Hands under shoulders, body in a straight line. Lower your chest to the floor and press back up.",
+  "DB Flat Floor Press": "Lie on your back on the floor. Press the dumbbells straight up over your chest, lower until your upper arms touch the floor.",
+  "DB Flyes (floor)": "Lying on the floor, arms wide with a slight elbow bend. Bring the dumbbells together over your chest in an arc.",
+  "DB Close-Grip Floor Press": "Floor press with the dumbbells touching, palms facing each other. Elbows stay tight to your sides — triceps focus.",
+  "Seated DB Shoulder Press": "Seated on the bench, press the dumbbells from shoulder height to overhead. Don't slam into lockout.",
+  "DB Lateral Raise": "Raise the dumbbells out to your sides to shoulder height with a slight elbow bend. Lead with the elbows.",
+  "Tricep Dips (bench/chair)": "Hands on the bench edge behind you, legs out front. Bend your elbows to lower your hips, press back up.",
+  "Overhead Tricep Ext. (seated)": "Seated, hold one dumbbell with both hands overhead. Bend the elbows to lower it behind your head, then extend.",
+  "DB Bench Press": "Lying on the bench, press the dumbbells from chest level to straight over your chest. Control the way down.",
+  "Decline Push-ups (feet on bench)": "Push-ups with your feet up on the bench — shifts emphasis to upper chest and shoulders.",
+  "DB Squeeze Press": "Bench press with the dumbbells pressed together the whole time. Squeeze them hard as you press — inner chest.",
+  "DB Pullover (on bench)": "Upper back on the bench, hold one dumbbell over your chest with both hands. Lower it in an arc behind your head, then pull back over.",
+  "Seated Arnold Press": "Start with palms facing you at shoulder height. Rotate palms forward as you press up, reverse on the way down.",
+  "DB Front Raise": "Raise the dumbbells straight out in front of you to shoulder height, arms mostly straight.",
+  "Skull Crushers (lying on bench)": "Lying down, arms straight up. Bend only at the elbows to lower the dumbbells beside your head, then extend.",
+  "Diamond Push-ups": "Push-ups with hands close together, thumbs and index fingers forming a diamond — triceps focus.",
+  "DB Floor Press (neutral grip)": "Floor press with palms facing each other — easier on the shoulders, still hits chest and triceps.",
+  "Incline Push-ups (hands on bench)": "Push-ups with hands on the bench. Easier angle — squeeze the chest hard at the top.",
+  "DB Flyes (on bench)": "Flyes lying on the bench — allows a deeper stretch than the floor version. Slight elbow bend throughout.",
+  "Single-Arm Floor Press": "Floor press one arm at a time. Brace your core so your body stays flat.",
+  "Seated DB Shoulder Press (slow)": "Same seated press, but take a full 4 seconds on the way down each rep.",
+  "DB Upright Row": "Pull the dumbbells up your body to chest height, elbows leading. Keep them below shoulder level.",
+  "Tricep Kickbacks": "Hinge forward, upper arms locked at your sides. Extend your forearms straight back and squeeze.",
+  "Bench Dips (feet out)": "Dips off the bench with legs extended straight — harder than bent-knee dips.",
+  /* Pull */
+  "DB Bent-Over Row": "Hinge at the hips with a flat back. Row the dumbbells to your lower ribs and squeeze your shoulder blades.",
+  "DB Bicep Curl": "Curl the dumbbells up with elbows pinned at your sides. Control the lowering — that's your 3 seconds down.",
+  "DB Single-Arm Row": "One hand and knee on the bench for support. Row the dumbbell to your hip with the other arm.",
+  "Hammer Curl": "Curl with palms facing each other — hits the biceps and forearms.",
+  "DB Renegade Row": "In a push-up position gripping the dumbbells, row one up to your ribs while bracing. Alternate sides.",
+  "DB Shrugs": "Dumbbells at your sides. Shrug your shoulders straight up toward your ears and squeeze at the top.",
+  "DB Rear Delt Flye (bent over)": "Hinge forward, raise the dumbbells out to your sides with slightly bent arms — rear shoulders.",
+  "DB Rear Delt Flye": "Hinge forward, raise the dumbbells out to your sides with slightly bent arms — rear shoulders.",
+  "Seated DB Arnold Press": "Seated, start with palms facing you at shoulder height. Rotate palms forward as you press up, reverse on the way down.",
+  "Skull Crushers (on bench)": "Lying on the bench, arms straight up. Bend only at the elbows to lower the dumbbells beside your head, then extend.",
+  "DB Floor Press": "Lie on your back on the floor. Press the dumbbells straight up over your chest, lower until your upper arms touch the floor.",
+  "DB Reverse Curl": "Curl with palms facing down — targets the forearms and brachialis.",
+  "Prone DB Row (chest on bench)": "Lie chest-down on the bench. Row both dumbbells up — the bench removes all momentum.",
+  "Concentration Curl": "Seated, elbow braced against your inner thigh. Curl one dumbbell with strict form.",
+  "DB Pullover (lat focus)": "Same pullover movement, but keep the arms straighter and think about pulling with your lats.",
+  "Zottman Curl": "Curl up palms-up, rotate to palms-down at the top, then lower slowly.",
+  "Gorilla Row": "Feet wide, hinge down with the dumbbells on the floor. Row one at a time from the floor, alternating.",
+  "Cross-Body Hammer Curl": "Hammer curl across your body toward the opposite shoulder.",
+  "DB Shrugs (3 sec hold at top)": "Shrug up and hold the squeeze for a full 3 seconds every rep.",
+  "Underhand Bent-Over Row": "Bent-over row with palms facing forward — more lower lats and biceps.",
+  "DB Drag Curl": "Curl while dragging the dumbbells up along your body, elbows traveling back — constant biceps tension.",
+  "Single-Arm Row (elbow out)": "Single-arm row with the elbow flared out about 90° — upper back and rear delt focus.",
+  "Wide-Grip DB Curl": "Curl with hands turned slightly outward, wider than your shoulders — outer biceps.",
+  "Superman Hold": "Lie face down. Lift your arms, chest, and legs off the floor and hold — lower back and glutes.",
+  "Farmer Hold": "Stand tall holding both dumbbells at your sides. Grip hard, shoulders back, don't lean.",
+  /* Lower */
+  "DB Goblet Squat": "Hold one dumbbell at your chest. Squat deep with your chest up, knees tracking over your toes.",
+  "Glute Bridge": "On your back with knees bent. Drive your hips up and squeeze your glutes hard at the top.",
+  "DB Reverse Lunge": "Step backward into a lunge, front knee at 90°. Push through the front heel to stand.",
+  "DB Sumo Squat": "Wide stance, toes out. Hold one dumbbell between your legs and squat — inner thighs and glutes.",
+  "Bodyweight Squat": "Fast but controlled — full depth, chest up, all 20 reps smooth.",
+  "Calf Raises": "Holding the dumbbells, rise onto your toes. Pause at the top, lower slowly.",
+  "Bulgarian Split Squat (rear foot on bench)": "Rear foot up on the bench behind you. Lower straight down into a lunge on the front leg.",
+  "DB Romanian Deadlift": "Slight knee bend, hinge at the hips with a flat back. Slide the dumbbells down your legs until you feel the hamstrings, then stand tall.",
+  "Step-ups (onto bench)": "Step fully onto the bench and drive through the heel. Control the step back down.",
+  "DB Forward Lunge": "Step forward into a lunge, then push off the front foot back to standing.",
+  "Goblet Pause Squat (2 sec hold)": "Goblet squat with a full 2-second pause at the bottom of every rep.",
+  "Single-Leg Glute Bridge": "Glute bridge with one leg extended. Drive up through the planted heel.",
+  "Seated Calf Raise (DBs on knees)": "Seated on the bench with dumbbells resting on your knees. Raise your heels off the floor and squeeze.",
+  "Wall Sit": "Back flat against the wall, thighs parallel to the floor. Hold and breathe.",
+  "DB Sumo Deadlift": "Wide stance, dumbbells on the floor inside your legs. Flat back, drive up through the heels.",
+  "Lateral Lunge": "Step wide to the side and sit into that hip, other leg straight. Push back to center.",
+  "Hip Thrust (shoulders on bench)": "Upper back on the bench, dumbbell on your hips. Drive your hips to full extension and squeeze.",
+  "DB Split Squat": "Stationary lunge stance. Lower straight down and up without stepping — stay tall.",
+  "Curtsy Lunge": "Step one leg behind and across the other into a lunge — side glutes.",
+  "Single-Leg Calf Raise": "Calf raise on one foot. Hold the wall for balance if needed.",
+  "Goblet Squat Drop Set": "12 goblet squats with 30 lbs, then immediately 10 more with 20 lbs — no rest between the two.",
+  /* Abs */
+  "Plank": "Forearms down, body in one straight line. Brace your core — don't let the hips sag or pike.",
+  "Bicycle Crunches": "On your back, alternate driving opposite elbow to opposite knee in a pedaling motion.",
+  "Leg Raises": "On your back, legs straight. Raise them to vertical and lower slowly without letting your back arch.",
+  "Russian Twist (15–20 lbs)": "Seated and leaning back, feet up if you can. Rotate the dumbbell side to side, turning from the torso.",
+  "Mountain Climbers": "Push-up position. Drive your knees toward your chest quickly, alternating — keep hips low.",
+  "Hollow Body Hold": "On your back, arms and legs extended and hovering. Press your lower back into the floor.",
+  "Reverse Crunches": "On your back with knees bent. Curl your hips off the floor toward your chest — don't swing.",
+  "Dead Bug": "On your back, arms up, knees at 90°. Lower opposite arm and leg slowly, keeping your back flat.",
+};
+
+/* ================= Program logic ================= */
+
+function weekVariant(dayId, week) {
+  const base = VARIANTS[dayId][(week - 1) % 3];
+  const progressed = week >= 4;
+  if (!progressed) return { label: base.label, blocks: base.blocks, progressed: false };
+  // Weeks 4–6: same variant, +1 round on Superset A
+  const blocks = base.blocks.map((b, i) =>
+    i === 0 ? Object.assign({}, b, { rounds: b.rounds + 1 }) : b
+  );
+  return { label: base.label + "+", blocks: blocks, progressed: true };
+}
+
+/* ================= Storage ================= */
+
+const memStore = {};
+function loadKey(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw !== null ? JSON.parse(raw) : fallback;
+  } catch (e) {
+    return memStore[key] !== undefined ? memStore[key] : fallback;
+  }
+}
+function saveKey(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch (e) {
+    memStore[key] = value;
+  }
+}
+
+/* ================= State ================= */
+
+const state = {
+  screen: "home",       // home | workout | abs | done
+  activeId: null,
+  checks: {},
+  log: loadKey("workout-log", []),
+  week: loadKey("workout-week", 1),
+  absDone: false,
+  restLeft: null,
+  absMode: null,        // null | "video" | "timer"
+  absIdx: 0,
+  absLeft: WORK_SECS,
+  absRunning: false,
+};
+let restInterval = null;
+let absInterval = null;
+
+/* ================= Helpers ================= */
+
+function beep(freq, dur) {
+  freq = freq || 880; dur = dur || 0.12;
+  try {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    beep._ctx = beep._ctx || new Ctx();
+    const ctx = beep._ctx;
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.frequency.value = freq;
+    o.type = "square";
+    g.gain.setValueAtTime(0.08, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+    o.connect(g); g.connect(ctx.destination);
+    o.start(); o.stop(ctx.currentTime + dur);
+  } catch (e) { /* silent */ }
+}
+
+function esc(s) {
+  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+function fmtDate(iso) {
+  return new Date(iso).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+}
+
+function daysAgo(iso) {
+  const d = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+  if (d === 0) return "today";
+  if (d === 1) return "yesterday";
+  return d + " days ago";
+}
+
+function activeDay() {
+  return DAYS.find(d => d.id === state.activeId);
+}
+
+function activeBlocks() {
+  return weekVariant(state.activeId, state.week).blocks;
+}
+
+function roundTotals() {
+  const blocks = activeBlocks();
+  const total = blocks.reduce((s, b) => s + b.rounds, 0);
+  const done = Object.values(state.checks).filter(Boolean).length;
+  return { total: total, done: done };
+}
+
+/* ================= Actions ================= */
+
+function setWeek(w) {
+  state.week = w;
+  saveKey("workout-week", w);
+  render();
+}
+
+function startWorkout(id) {
+  state.activeId = id;
+  state.checks = {};
+  state.absDone = false;
+  stopRest();
+  state.screen = "workout";
+  render();
+}
+
+function toggleRound(b, r) {
+  const key = b + "-" + r;
+  state.checks[key] = !state.checks[key];
+  render();
+}
+
+function startRest(secs) {
+  clearInterval(restInterval);
+  state.restLeft = secs;
+  renderRestDock();
+  restInterval = setInterval(() => {
+    state.restLeft -= 1;
+    if (state.restLeft <= 3 && state.restLeft > 0) beep(660, 0.08);
+    if (state.restLeft <= 0) {
+      stopRest();
+      beep(1046, 0.25);
+    }
+    renderRestDock();
+  }, 1000);
+}
+
+function stopRest() {
+  clearInterval(restInterval);
+  state.restLeft = null;
+}
+
+function stopAbsTimer() {
+  clearInterval(absInterval);
+  state.absRunning = false;
+}
+
+function finishSession(withAbs) {
+  const day = activeDay();
+  const variant = weekVariant(state.activeId, state.week);
+  const entry = {
+    date: new Date().toISOString(),
+    workout: day.name,
+    abs: withAbs,
+    week: state.week,
+    variant: variant.label,
+  };
+  state.log = [entry].concat(state.log).slice(0, 300);
+  saveKey("workout-log", state.log);
+  state.absDone = withAbs;
+  stopRest();
+  stopAbsTimer();
+  state.screen = "done";
+  render();
+}
+
+function goHome() {
+  state.activeId = null;
+  stopRest();
+  stopAbsTimer();
+  state.screen = "home";
+  render();
+}
+
+function goAbs() {
+  stopRest();
+  stopAbsTimer();
+  state.absMode = "main";
+  state.absIdx = 0;
+  state.absLeft = WORK_SECS;
+  state.absRunning = false;
+  state.screen = "abs";
+  render();
+}
+
+function absTick() {
+  state.absLeft -= 1;
+  if (state.absLeft <= 3 && state.absLeft > 0) beep(880, 0.06);
+  if (state.absLeft <= 0) {
+    const isWork = ABS_SEQ[state.absIdx].kind === "work";
+    beep(isWork ? 523 : 1046, 0.2);
+    if (state.absIdx >= ABS_SEQ.length - 1) {
+      stopAbsTimer();
+      setTimeout(() => finishSession(true), 400);
+      return;
+    }
+    state.absIdx += 1;
+    state.absLeft = ABS_SEQ[state.absIdx].kind === "work" ? WORK_SECS : REST_SECS;
+    renderAbs();
+    return;
+  }
+  updateAbsClock();
+}
+
+function startAbsTimer() {
+  clearInterval(absInterval);
+  state.absRunning = true;
+  absInterval = setInterval(absTick, 1000);
+}
+
+function pauseAbsTimer() {
+  clearInterval(absInterval);
+  state.absRunning = false;
+}
+
+/* ================= Render ================= */
+
+const app = document.getElementById("app");
+
+function render() {
+  document.body.classList.toggle("dark", state.screen === "abs" && state.absMode === "timer");
+  if (state.screen === "home") renderHome();
+  else if (state.screen === "workout") renderWorkoutScreen();
+  else if (state.screen === "abs") renderAbs();
+  else if (state.screen === "done") renderDone();
+}
+
+function renderHome() {
+  const weekStart = new Date();
+  weekStart.setHours(0, 0, 0, 0);
+  weekStart.setDate(weekStart.getDate() - ((weekStart.getDay() + 6) % 7)); // Monday
+  const thisWeek = state.log.filter(e => new Date(e.date) >= weekStart).length;
+
+  const chips = [1, 2, 3, 4, 5, 6].map(w =>
+    `<button class="week-chip ${w === state.week ? "week-chip-on" : ""}" data-week="${w}">${w}</button>`
+  ).join("");
+
+  const cards = DAYS.map(d => {
+    const v = weekVariant(d.id, state.week);
+    const last = state.log.find(e => e.workout === d.name);
+    return `
+      <button class="day-card" data-start="${d.id}">
+        <span class="plate">${esc(d.tag)}</span>
+        <span class="day-info">
+          <span class="day-name">${esc(d.name)}</span>
+          <span class="day-sub">${esc(d.subtitle)}</span>
+          <span class="day-variant">Variant ${esc(v.label)}${v.progressed ? " · +1 round" : ""}</span>
+          <span class="day-last">${last ? "Last: " + esc(daysAgo(last.date)) : "Not logged yet"}</span>
+        </span>
+        <span class="go" aria-hidden="true">→</span>
+      </button>`;
+  }).join("");
+
+  const history = state.log.length ? `
+    <section class="history">
+      <h2>Recent sessions</h2>
+      <ul>
+        ${state.log.slice(0, 6).map(e => `
+          <li>
+            <span class="h-date">${esc(fmtDate(e.date))}</span>
+            <span class="h-name">${esc(e.workout)}</span>
+            <span class="h-var">${e.variant ? "wk" + e.week + " · " + esc(e.variant) : ""}</span>
+            <span class="h-abs">${e.abs ? "+ Abs" : ""}</span>
+          </li>`).join("")}
+      </ul>
+    </section>` : "";
+
+  app.innerHTML = `
+    <header class="masthead">
+      <div class="eyebrow">Home Gym · 6-Week Program</div>
+      <h1>Training<br />Log</h1>
+      <div class="week-count">
+        <span class="week-num">${thisWeek}</span>
+        <span class="week-label">sessions<br />this week</span>
+      </div>
+    </header>
+    <div class="week-select">
+      <h2>Program week</h2>
+      <div class="week-chips">${chips}</div>
+      <p class="week-note">${state.week <= 3
+        ? "Weeks 1–3 rotate variants A, B, C."
+        : "Weeks 4–6 repeat A, B, C with an extra round on Superset A."}</p>
+    </div>
+    <div class="cards">${cards}</div>
+    ${history}
+    <p class="footnote">Tempo 3s down / 1s up · Rest 30–45s · Every session ends with 8-Minute Abs</p>
+  `;
+
+  app.querySelectorAll("[data-week]").forEach(btn =>
+    btn.addEventListener("click", () => setWeek(parseInt(btn.dataset.week, 10)))
+  );
+  app.querySelectorAll("[data-start]").forEach(btn =>
+    btn.addEventListener("click", () => startWorkout(btn.dataset.start))
+  );
+}
+
+function renderWorkoutScreen() {
+  const day = activeDay();
+  const variant = weekVariant(state.activeId, state.week);
+  const blocks = variant.blocks;
+  const t = roundTotals();
+  const pct = Math.round((t.done / t.total) * 100);
+  const allDone = t.done === t.total;
+
+  const blocksHtml = blocks.map((block, bi) => {
+    const blockDone = Array.from({ length: block.rounds }).every((_, ri) => state.checks[bi + "-" + ri]);
+    const exercises = block.exercises.map(ex => {
+      const desc = DESC[ex.name];
+      if (!desc) {
+        return `<li class="ex-item"><div class="ex-row"><span class="ex-name">${esc(ex.name)}</span><span class="ex-detail">${esc(ex.detail)}</span></div></li>`;
+      }
+      return `
+      <li class="ex-item">
+        <button class="ex-row" aria-expanded="false">
+          <span class="ex-name">${esc(ex.name)} <span class="ex-q" aria-hidden="true">?</span></span>
+          <span class="ex-detail">${esc(ex.detail)}</span>
+        </button>
+        <div class="ex-desc" hidden>${esc(desc)}</div>
+      </li>`;
+    }).join("");
+    const rounds = Array.from({ length: block.rounds }).map((_, ri) => {
+      const on = !!state.checks[bi + "-" + ri];
+      return `<button class="round ${on ? "round-on" : ""}" data-toggle="${bi}-${ri}" aria-pressed="${on}"
+        aria-label="${esc(block.name)} round ${ri + 1}">${on ? "✓" : ri + 1}</button>`;
+    }).join("");
+    return `
+      <section class="block ${blockDone ? "block-done" : ""}">
+        <div class="block-head">
+          <h2>${esc(block.name)}</h2>
+          <span class="block-meta">${block.rounds} rounds · rest ${esc(block.rest)}</span>
+        </div>
+        <ul class="ex-list">${exercises}</ul>
+        <div class="rounds">${rounds}</div>
+      </section>`;
+  }).join("");
+
+  app.innerHTML = `
+    <nav class="topbar">
+      <button class="link-btn" id="back">← Back</button>
+      <span class="topbar-title">${esc(day.name)}</span>
+      <span class="topbar-pct">${pct}%</span>
+    </nav>
+    <div class="progress-rail" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100">
+      <div class="progress-fill" style="width:${pct}%"></div>
+    </div>
+    <p class="variant-banner">Week ${state.week} · Variant <strong>${esc(variant.label)}</strong>${variant.progressed ? " · +1 round on Superset A" : ""}</p>
+    ${blocksHtml}
+    <div class="finish-zone">
+      <button class="primary ${allDone ? "" : "primary-soft"}" id="abs">
+        Start 8-Minute Abs ${allDone ? "" : "(" + t.done + "/" + t.total + " rounds done)"}
+      </button>
+      <button class="link-btn subtle" id="skip">Skip abs &amp; finish</button>
+    </div>
+    <div class="rest-dock" id="rest-dock"></div>
+    <div class="dock-spacer"></div>
+  `;
+
+  document.getElementById("back").addEventListener("click", goHome);
+  document.getElementById("abs").addEventListener("click", goAbs);
+  document.getElementById("skip").addEventListener("click", () => finishSession(false));
+  app.querySelectorAll("[data-toggle]").forEach(btn =>
+    btn.addEventListener("click", () => {
+      const parts = btn.dataset.toggle.split("-");
+      toggleRound(parts[0], parts[1]);
+    })
+  );
+  bindExpandableRows();
+  renderRestDock();
+}
+
+function bindExpandableRows() {
+  app.querySelectorAll("button.ex-row, button.abs-row").forEach(btn =>
+    btn.addEventListener("click", () => {
+      const desc = btn.nextElementSibling;
+      if (!desc) return;
+      const open = !desc.hidden;
+      desc.hidden = open;
+      btn.setAttribute("aria-expanded", String(!open));
+    })
+  );
+}
+
+function renderRestDock() {
+  const dock = document.getElementById("rest-dock");
+  if (!dock) return;
+  if (state.restLeft === null) {
+    dock.innerHTML = `
+      <button class="rest-btn" data-rest="30">Rest 30s</button>
+      <button class="rest-btn" data-rest="45">Rest 45s</button>`;
+    dock.querySelectorAll("[data-rest]").forEach(btn =>
+      btn.addEventListener("click", () => startRest(parseInt(btn.dataset.rest, 10)))
+    );
+  } else {
+    dock.innerHTML = `
+      <button class="rest-btn rest-live" id="rest-cancel">
+        <span class="rest-count">${state.restLeft}</span> tap to cancel
+      </button>`;
+    document.getElementById("rest-cancel").addEventListener("click", () => {
+      stopRest();
+      renderRestDock();
+    });
+  }
+}
+
+/* ---------- Abs screens ---------- */
+
+function renderAbs() {
+  if (state.absMode === "timer") renderAbsTimer();
+  else renderAbsMain();
+}
+
+function absTopbar(rightLabel, dark) {
+  const cls = dark ? " light" : "";
+  return `
+    <nav class="topbar">
+      <button class="link-btn${cls}" id="exit">← Exit</button>
+      <span class="topbar-title${cls}">8-Minute Abs</span>
+      <span class="topbar-pct${cls}">${rightLabel}</span>
+    </nav>`;
+}
+
+function bindExit(toMain) {
+  document.getElementById("exit").addEventListener("click", () => {
+    stopAbsTimer();
+    if (toMain) {
+      state.absMode = "main";
+      render();
+    } else {
+      state.screen = "workout";
+      render();
+    }
+  });
+}
+
+function renderAbsMain() {
+  const rows = ABS.map((name, i) => {
+    const desc = DESC[name];
+    return `
+      <li class="ex-item">
+        <button class="ex-row" aria-expanded="false">
+          <span class="ex-name"><span class="abs-num-label">${i + 1}</span> ${esc(name)} <span class="ex-q" aria-hidden="true">?</span></span>
+          <span class="ex-detail">45 sec</span>
+        </button>
+        <div class="ex-desc" hidden>${esc(desc || "")}</div>
+      </li>`;
+  }).join("");
+
+  app.innerHTML = `
+    ${absTopbar("8:00", false)}
+    <a class="video-link" href="${ABS_VIDEO_URL}" target="_blank" rel="noopener noreferrer">
+      <span class="video-play">▶</span>
+      <span class="video-link-info">
+        <span class="video-link-name">Follow the video</span>
+        <span class="video-link-sub">Opens your 8-minute abs video on YouTube</span>
+      </span>
+      <span class="go" aria-hidden="true">→</span>
+    </a>
+    <section class="block abs-block">
+      <div class="block-head">
+        <h2>The Workout</h2>
+        <span class="block-meta">8 exercises · 45 sec each · ~10 sec between</span>
+      </div>
+      <ul class="ex-list">${rows}</ul>
+    </section>
+    <div class="finish-zone">
+      <button class="primary primary-soft" id="start-timer">⏱ Start guided timer</button>
+      <button class="primary" id="finish">Abs done — finish &amp; save</button>
+    </div>
+  `;
+  bindExit(false);
+  bindExpandableRows();
+  document.getElementById("start-timer").addEventListener("click", () => {
+    state.absMode = "timer";
+    state.absIdx = 0;
+    state.absLeft = WORK_SECS;
+    state.absRunning = false;
+    render();
+  });
+  document.getElementById("finish").addEventListener("click", () => finishSession(true));
+}
+
+function updateAbsClock() {
+  const step = ABS_SEQ[state.absIdx];
+  const total = step.kind === "work" ? WORK_SECS : REST_SECS;
+  const ring = (state.absLeft / total) * 100;
+  const clock = document.getElementById("abs-clock");
+  const num = document.getElementById("abs-num");
+  if (clock) clock.style.setProperty("--ring", ring + "%");
+  if (num) num.textContent = state.absLeft;
+}
+
+function renderAbsTimer() {
+  const step = ABS_SEQ[state.absIdx];
+  const isWork = step.kind === "work";
+  const total = isWork ? WORK_SECS : REST_SECS;
+  const ring = (state.absLeft / total) * 100;
+  const workIndex = ABS_SEQ.slice(0, state.absIdx + 1).filter(s => s.kind === "work").length;
+  const nextWork = ABS_SEQ.slice(state.absIdx + 1).find(s => s.kind === "work");
+  const atStart = state.absIdx === 0 && state.absLeft === WORK_SECS;
+
+  const listItems = ABS.map((name, i) => {
+    let cls = "";
+    if (i + 1 < workIndex || (i + 1 === workIndex && !isWork)) cls = "abs-past";
+    else if (i + 1 === workIndex) cls = "abs-now";
+    return `<li class="${cls}">${esc(name)}</li>`;
+  }).join("");
+
+  app.innerHTML = `
+    ${absTopbar(workIndex + "/" + ABS.length, true)}
+    <div class="abs-stage">
+      <div class="abs-kind">${isWork ? "WORK" : "TRANSITION"}</div>
+      <div class="abs-name">${isWork ? esc(step.name) : "Get ready"}</div>
+      <div class="abs-cue">${isWork ? esc(DESC[step.name] || "") : (nextWork ? "Set up for: " + esc(nextWork.name) : "")}</div>
+      <div class="abs-clock" id="abs-clock" style="--ring:${ring}%"><span id="abs-num">${state.absLeft}</span></div>
+      <div class="abs-next">${nextWork ? "Next: " + esc(nextWork.name) : "Last one — finish strong"}</div>
+    </div>
+    <div class="abs-controls">
+      <button class="primary" id="playpause">${state.absRunning ? "Pause" : atStart ? "Start" : "Resume"}</button>
+      <button class="link-btn light" id="skipstep">Skip →</button>
+    </div>
+    <ul class="abs-list">${listItems}</ul>
+  `;
+
+  bindExit(true);
+  document.getElementById("playpause").addEventListener("click", () => {
+    if (state.absRunning) pauseAbsTimer(); else startAbsTimer();
+    document.getElementById("playpause").textContent = state.absRunning ? "Pause" : "Resume";
+  });
+  document.getElementById("skipstep").addEventListener("click", () => {
+    if (state.absIdx >= ABS_SEQ.length - 1) { finishSession(true); return; }
+    state.absIdx += 1;
+    state.absLeft = ABS_SEQ[state.absIdx].kind === "work" ? WORK_SECS : REST_SECS;
+    renderAbsTimer();
+    if (state.absRunning) startAbsTimer();
+  });
+}
+
+function renderDone() {
+  const day = activeDay();
+  app.innerHTML = `
+    <div class="done-screen">
+      <div class="done-stamp">✓</div>
+      <h1 class="done-title">${esc(day.name)} logged</h1>
+      <p class="done-sub">${state.absDone ? "Full session including 8-Minute Abs." : "Session saved — abs skipped this time."}</p>
+      <button class="primary" id="home">Back to Training Log</button>
+    </div>
+  `;
+  document.getElementById("home").addEventListener("click", goHome);
+}
+
+render();
+</script>
+</body>
+</html>
